@@ -21,7 +21,7 @@ struct config_app_json_t {
     std::string                 loglevel;
     std::vector<config_actor_t> actors;
 };
-REFLECTION(config_app_json_t, id, listen,  loglevel, actors);
+REFLECTION(config_app_json_t, id, listen, loglevel, actors);
 
 config_app_json_t configAppJsonGet();
 
@@ -46,6 +46,7 @@ REFLECTION(ip_actor_t, app, actor);
 ---------------------------------------------------------------------------------*/
 struct ip_api_t {
     int64_t    hash;
+    int64_t    route;
     ip_actor_t ip;
 };
-REFLECTION(ip_api_t, hash, ip);
+REFLECTION(ip_api_t, route, hash, ip);

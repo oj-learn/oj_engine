@@ -3,7 +3,6 @@
 #include "./../actor/actor.h"
 #include "./../base/base.h"
 #include <future>
-#include <mutex>
 
 /*---------------------------------------------------------------------------------
 app_t
@@ -28,7 +27,7 @@ private:
 
 public:
     //-----------------------------------------------------------------------------
-    static app_t& singletion();
+    static auto singletion() -> std::shared_ptr<app_t>&;
     ~app_t();
 
 public:

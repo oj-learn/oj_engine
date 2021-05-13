@@ -7,6 +7,7 @@
 #include <mutex>
 #include <random>
 #include <regex>
+#include <shared_mutex>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -25,6 +26,15 @@ product // 乘
 quotient // 除
 remainder // 求余
 父(parent)、子(child)和同胞(sibling)
+hdr 头
+rbr 红黑树
+fd 
+queue 队列
+wq 等待队列
+entry
+redirect 重定向
+delta 
+expires
 ---------------------------------------------------------------------------------*/
 
 //注释方式 1
@@ -131,4 +141,4 @@ int64_t guidGen();
 /*---------------------------------------------------------------------------------
 rand
 ---------------------------------------------------------------------------------*/
-int32_t rand(int32_t max);
+int32_t rand(int32_t min, int32_t max);

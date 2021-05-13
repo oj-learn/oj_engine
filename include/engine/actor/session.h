@@ -50,4 +50,5 @@ private:
 public:
     //-----------------------------------------------------------------------------
     status_t write(channel_t::data_t data);
+    int64_t  peerGet();
 };

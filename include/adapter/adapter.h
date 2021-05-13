@@ -3,6 +3,9 @@
 #include "api/db.h"
 #include "app/app.h"
 
+/***************************************  ***************************************/
+
+
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 void tcpConnect(std::string addrport, std::string mark = "", int64_t guid = 0);
@@ -10,10 +13,6 @@ void tcpConnect(std::string addrport, std::string mark = "", int64_t guid = 0);
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 void consoleCbSet(std::string cmd, std::function<void(std::vector<std::string>&)>&& cb, std::string note = "");
-
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-actor_sptr_t actorSuperior();
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
@@ -36,10 +35,11 @@ void adaper_dbCreate(std::string key_auto = "", std::string key_unique = "", std
     req.key_auto   = std::move(key_auto);
     req.key_unique = std::move(key_unique);
 
-    auto& app = app_t::singletion();
+
+    auto& App = app_t::singletion();
 
     reflect::db_create_rep rep;
-    app.call(api_db_create, req, rep);
+    App->call(api_db_create, req, rep);
 
     if (rep.message != "") {
         logError("adaper_dbCreate req.table_name:{} message:{}", req.table_name, rep.message);
@@ -60,10 +60,10 @@ std::vector<t_table> adaper_dbQuery(std::string conditions = "")
     req.table_name = std::string(iguana::get_name<t_table>());
     req.conditions = conditions;
 
-    auto& app = app_t::singletion();
+    auto& App = app_t::singletion();
 
     reflect::db_query_rep rep;
-    app.call(api_db_query, req, rep);
+    App->call(api_db_query, req, rep);
 
     result_t result;
     if (rep.cmd == req.cmd && rep.message == "") {
@@ -89,10 +89,10 @@ void adaper_dbUpdate(std::vector<t_table>& tables)
     req.table_name = std::string(iguana::get_name<t_table>());
     req.zip        = codec_.pack(tables);
 
-    auto& app = app_t::singletion();
+    auto& App = app_t::singletion();
 
     reflect::db_update_rep rep;
-    app.call(api_db_update, req, rep);
+    App->call(api_db_update, req, rep);
 
     if (rep.message != "") {
         logError("adaper_dbCreate req.table_name:{} message:{}", req.table_name, rep.message);

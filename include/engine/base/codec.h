@@ -37,7 +37,7 @@ enum class head_code_t : int16_t {
     API_UP,
     API_DOWN,
     API_SYNC,
-    INTERFACE_SYNC,
+    ROUTETABLE,
 };
 
 /*---------------------------------------------------------------------------------

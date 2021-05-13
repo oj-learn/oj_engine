@@ -6,7 +6,6 @@
 #include "app/app.h"
 #include "base/log.h"
 #include "base/file.h"
-//#include <gperftools/profiler.h>
 
 namespace test {
 
@@ -15,13 +14,12 @@ using console_args_t = std::vector<std::string>;
 /*---------------------------------------------------------------------------------
 其它定义
 ---------------------------------------------------------------------------------*/
+auto& App = app_t::singletion();
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 void conn(console_args_t& args)
 {
-    auto& app = app_t::singletion();
-
     auto n = std::atoll(args[0].c_str());
     while (n-- > 0) {
         tcpConnect("127.0.0.1:48554");
@@ -32,15 +30,13 @@ void conn(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void close(console_args_t& args)
 {
-    auto& app = app_t::singletion();
-
     if (args.size() > 0) {
         auto n = 1;
         if (args.size() >= 2) {
             n = std::atoll(args[1].c_str());
         }
 
-        app.actorFor(args[0], [n](auto a) mutable -> int {
+        App->actorFor(args[0], [n](auto a) mutable -> int {
             if (--n < 0) {
                 return 1;
             }
@@ -51,34 +47,25 @@ void close(console_args_t& args)
         });
 
     } else {
-        app.closeSet();
+        App->closeSet();
     }
 }
 
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-// void gperf(console_args_t& args)
-// {
-//     static bool is_open = false;
-//     if (!is_open) {  // start
-//         is_open = true;
-//         ProfilerStart("test.prof");
-//         logError("ProfilerStart");
-//     } else {  // stop
-//         is_open = false;
-//         ProfilerStop();
-//         logError("ProfilerStop");
-//     }
-// }
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 void actor(console_args_t& args)
 {
-    auto& app = app_t::singletion();
-
-    auto a = args.size() > 1 ? app.actorMake(args[0], args[1]) : app.actorMake(args[0]);
+    auto a = args.size() > 1 ? App->actorMake(args[0], args[1]) : App->actorMake(args[0]);
     if (nullptr != a) {
+        //-----------------------------------------------------------------------------
+        {
+            static auto cb = [](int64_t r) {
+                logDebug("callAsync rep registActor", r);
+            };
+
+            //actorMain->rpcGet().callAsync(actorMain->channelNet(), cb, "registActor", App->guid(), a->guid());
+        }
     }
 }
 
@@ -86,8 +73,7 @@ void actor(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void rpc(console_args_t& args)
 {
-    auto& app   = app_t::singletion();
-    auto  actor = app.actorGet("test");
+    auto actor = App->actorGet("test");
     if (nullptr == actor) {
         return;
     }
@@ -129,9 +115,7 @@ void rpc(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void req(console_args_t& args)
 {
-    auto& app = app_t::singletion();
-
-    auto actor = app.actorGet("test");
+    auto actor = App->actorGet("test");
     if (nullptr == actor) {
         return;
     }
@@ -176,9 +160,7 @@ void req(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void rpc2(console_args_t& args)
 {
-    auto& app = app_t::singletion();
-
-    auto actor = app.actorGet("test");
+    auto actor = App->actorGet("test");
     if (nullptr == actor) {
         return;
     }
@@ -198,9 +180,7 @@ void rpc2(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void rpc3(console_args_t& args)
 {
-    auto& app = app_t::singletion();
-
-    auto actor = app.actorGet("session_superior");
+    auto actor = App->actorGet("session_parent");
     if (nullptr == actor) {
         return;
     }
@@ -221,9 +201,7 @@ void dbcreate(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void dbquery(console_args_t& args)
 {
-    // auto& app = app_t::singletion();
-
-    // auto actor = app.actorGet("test");
+    // auto actor = App->actorGet("test");
     // if (nullptr == actor) {
     //     return;
     // }
@@ -269,15 +247,8 @@ void pubsub(console_args_t& args)
         return;
     }
 
-    auto& app = app_t::singletion();
-
-    auto actor = app.actorGet("test");
-    if (nullptr == actor) {
-        return;
-    }
-
     if ("sub" == args[0]) {
-        adaper_pubsub_subscribe("pubsub", actor);
+        adaper_pubsub_subscribe("pubsub", App);
 
     } else {
         auto content = args[0];
@@ -297,9 +268,9 @@ void daemon1(console_args_t& args)
         auto appDir = oj_file::appDir();
 
         std::vector<reflect::app_info> records;
-        records.emplace_back(reflect::app_info{ 1, "main", 1, 0, "127.0.0.1", "77771", "debug", "localhost", appDir + "main" });
-        records.emplace_back(reflect::app_info{ 2, "server", 1, 1, "127.0.0.1", "77772", "debug", "localhost", appDir + "server" });
-        records.emplace_back(reflect::app_info{ 3, "client", 1, 2, "127.0.0.1", "77773", "debug", "localhost", appDir + "client" });
+        records.emplace_back(reflect::app_info{ 1, "main", 1, 0, "127.0.0.1", "7758", "debug", "localhost", appDir + "main" });
+        records.emplace_back(reflect::app_info{ 2, "server", 1, 1, "127.0.0.1", "48554", "debug", "localhost", appDir + "server" });
+        records.emplace_back(reflect::app_info{ 3, "client", 1, 2, "127.0.0.1", "48555", "debug", "localhost", appDir + "client" });
         adaper_dbUpdate(records);
     }
 
@@ -308,6 +279,7 @@ void daemon1(console_args_t& args)
         records.emplace_back(reflect::actor_info{ 1000, "actor1000", 0, 1, "test", "" });
         records.emplace_back(reflect::actor_info{ 2000, "actor2000", 0, 2, "test", "" });
         records.emplace_back(reflect::actor_info{ 3000, "actor3000", 0, 3, "test", "" });
+        records.emplace_back(reflect::actor_info{ 4000, "actor4000", 0, 4, "test", "" });
         adaper_dbUpdate(records);
     }
 }
@@ -316,8 +288,7 @@ void daemon1(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void daemon2(console_args_t& args)
 {
-    auto& app   = app_t::singletion();
-    auto  actor = app.actorGet("test");
+    auto actor = App->actorGet("test");
     if (nullptr == actor) {
         return;
     }
@@ -347,8 +318,7 @@ void daemon2(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void daemon3(console_args_t& args)
 {
-    auto& app   = app_t::singletion();
-    auto  actor = app.actorGet("test");
+    auto actor = App->actorGet("test");
     if (nullptr == actor) {
         return;
     }
@@ -375,8 +345,7 @@ void daemon3(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void daemon4(console_args_t& args)
 {
-    auto& app   = app_t::singletion();
-    auto  actor = app.actorGet("test");
+    auto actor = App->actorGet("test");
     if (nullptr == actor) {
         return;
     }
@@ -403,8 +372,7 @@ void daemon4(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void daemon5(console_args_t& args)
 {
-    auto& app   = app_t::singletion();
-    auto  actor = app.actorGet("test");
+    auto actor = App->actorGet("test");
     if (nullptr == actor) {
         return;
     }
@@ -435,26 +403,27 @@ void daemon5(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void loglevel(console_args_t& args)
 {
-    auto& app   = app_t::singletion();
-    auto  actor = app.actorGet("test");
-    if (nullptr == actor) {
-        return;
-    }
-
     if (args.size() <= 0) {
         return;
     }
 
-    std::string level = "debug";
+    std::string level = "trace";
     if (args.size() >= 2) {
         level = args[1];
     }
 
     app_loglevel_req req;
-    req.appid = std::atoll(args[0].c_str());
+    req.appid = App->guid();
     req.level = level;
 
-    actor->call(api_app_loglevel, req);
+    if (auto appid = std::atoll(args[0].c_str()); 0 == appid) {
+        App->rpcGet().request(nullptr, req);
+
+    } else {
+        req.appid = appid;
+        App->call(api_app_loglevel, req);
+    }
 }
+
 
 }  // namespace test

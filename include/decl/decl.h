@@ -57,15 +57,15 @@ REFLECTION(app_loglevel_req, appid, level);
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
-struct superior_connect_ntf {
+struct parent_connect_ntf {
     int64_t appid;
 };
-REFLECTION(superior_connect_ntf, appid);
+REFLECTION(parent_connect_ntf, appid);
 
-struct superior_disconnect_ntf {
+struct parent_disconnect_ntf {
     int64_t appid;
 };
-REFLECTION(superior_disconnect_ntf, appid);
+REFLECTION(parent_disconnect_ntf, appid);
 
 
 /*---------------------------------------------------------------------------------

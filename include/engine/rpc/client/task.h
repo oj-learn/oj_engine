@@ -107,7 +107,7 @@ public:
 public:
     //-----------------------------------------------------------------------------
     bool empty() const;
-    int  close();
+    auto close() -> task_map_t;
     bool push(task_ptr_t& task);
     auto pull(int64_t task_id) -> task_ptr_t;
 };

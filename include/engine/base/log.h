@@ -2,7 +2,7 @@
 
 #include "spdlog/fmt/fmt.h"
 //#include "fmt/format.h"
-#include <experimental/source_location>
+#include <source_location>
 #include <string>
 
 
@@ -82,7 +82,7 @@ public:
     //-----------------------------------------------------------------------------
     //void registLogger(config_logger_t& cfg, bool default_ = false);
     //-----------------------------------------------------------------------------
-    int write(int logLevel, std::string&& data, const std::experimental::source_location& location);
+    int write(int logLevel, std::string&& data, const std::source_location location = std::source_location::current());
     //-----------------------------------------------------------------------------
     bool printByColor(int Color, const std::string& log);
 };
@@ -96,14 +96,9 @@ public:
 #define logSingletion                   log_t::singletion()
 #define logFormat(...)                  fmt::format(__VA_ARGS__)
 #define logAlign(...)                   logFormat("{0:-^{1}}", logFormat(__VA_ARGS__), 80)
-#define logWrite(logLevel, fmstr, ...)  (logLevel >= logSingletion.m_writeLevel ? logSingletion.write(logLevel, logFormat(fmstr, ##__VA_ARGS__), std::experimental::source_location::current()) : 0)
+#define logWrite(logLevel, fmstr, ...)  (logLevel >= logSingletion.m_writeLevel ? logSingletion.write(logLevel, logFormat(fmstr, ##__VA_ARGS__)) : 0)
 #define logTrace(fmstr, ...)            logWrite(0, fmstr, ##__VA_ARGS__)
 #define logDebug(fmstr, ...)            logWrite(1, fmstr, ##__VA_ARGS__)
 #define logInfo(fmstr, ...)             logWrite(2, fmstr, ##__VA_ARGS__)
 #define logError(fmstr, ...)            logWrite(4, fmstr, ##__VA_ARGS__)
 #define logErrorReturn(ret, fmstr, ...) return logError(fmstr, ##__VA_ARGS__), ret
-
-
-//#define logError(fmstr, ...) logSingletion.write("logger_error", stringByArgs(fmstr, ##__VA_ARGS__), std::experimental::source_location::current())
-//#define logErrorReturn(ret, fmstr, ...) return logError(fmstr, ##__VA_ARGS__), ret
-//#define logPrint(color, ...) logSingletion.printByColor((color), stringByArgs(##__VA_ARGS__, "\n"))
