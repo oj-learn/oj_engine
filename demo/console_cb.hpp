@@ -417,7 +417,7 @@ void loglevel(console_args_t& args)
     req.level = level;
 
     if (auto appid = std::atoll(args[0].c_str()); 0 == appid) {
-        App->rpcGet().request(nullptr, req);
+        App->request(req);
 
     } else {
         req.appid = appid;
