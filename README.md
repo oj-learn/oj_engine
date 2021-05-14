@@ -27,6 +27,12 @@
   - 高并发，actor模型，每个actor独立处理自己的数据不关联；
   
 ## 举例
+### DEMO
+1. pubsub，订阅注册，观察者模式；
+2. daemon，简单实现一个守护actor，从appinfo启动app，app对应的actor，关闭app或者app中的actor，很简单自己看代码吧！！；
+3. session_daemon，一条session也是1个actor，关闭actor就是关闭session；
+---
+
 ### 接口声明及实现
 ```
 // 比如实现一个注册订阅的接口, 接口声明和普通函数声明没啥区别；
@@ -145,15 +151,12 @@ void adaper_pubsub_publish(std::string key, channel_t::data_t data)
     req.key = key;
     req.zip = codec_.pack(data); //这只是要广播的数据
 
-    // 没有actor可以用，用app_t吧，也是继承自actor,
-    auto& app = app_t::singletion();
-
     // 这是一个同步调用，有返回值
-    app.call(api_pubsub_publish, req, rep);
+    actor->call(api_pubsub_publish, req, rep);
     logDebug("api_pubsub_publish sync rep.key:{}, rep.size:{}", rep.key, rep.size);
 
     // 异步调用，异步函数要提供 rep哦！因为这是有返回值的．．
-    app.call(api_pubsub_publish, req, [](pubsub_publish_rep& rep){
+    actor->call(api_pubsub_publish, req, [](pubsub_publish_rep& rep){
         logDebug("api_pubsub_publish async rep.key:{}, rep.size:{}", rep.key, rep.size);
     });    
 }
