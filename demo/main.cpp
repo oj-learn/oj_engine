@@ -2,11 +2,13 @@
 #include "./console_cb.hpp"
 #include "./qps_rpc.hpp"
 #include "./test.h"
+#include "./daemon.h"
+#include "./pubsub.h"
+#include "./session_daemon.h"
 #include "app/app.h"
 #include "base/log.h"
 #include <iostream>
 #include <thread>
-
 
 //#pragma comment(lib, "..\\..\\bin\\Debug.x64\\lib_base.lib")
 
@@ -15,9 +17,12 @@ int main(void)
     if (auto& App = app_t::singletion(); status_t::null == App->open()) {
         //-----------------------------------------------------------------------------
         //-----------------------------------------------------------------------------
-        App->actorBind<actor_showRpc_t>("showrpc");
         App->actorBind<test_t>("test");
         App->actorBind<qps_rpc_t>("qpsrpc");
+        App->actorBind<actor_showRpc_t>("showrpc");
+        App->actorBind<pubsub_t>("pubsub");
+        App->actorBind<daemon_t>("daemon");
+        App->actorBind<session_daemon_t>("session_daemon");
         //-----------------------------------------------------------------------------
         consoleCbSet("actor", test::actor);
         consoleCbSet("conn", test::conn);
