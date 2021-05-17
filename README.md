@@ -71,60 +71,7 @@ private:
 };
 
 ```
-```
-status_t pubsub_t::onStartup(std::string mark)
-{
-    // 注册两个接口，不一定要在onStartup注册，只要在调用到接口的时候注册了就行了．
-    m_rpc.register_remote([this](pubsub_subscribe_req& req) {
-        this->subscribe(req);
-    });
-    m_rpc.register_remote([this](pubsub_publish_req& req, pubsub_publish_rep& rep) {
-        this->publish(req, rep);
-    });
-    return status_t::null;
-}
-void pubsub_t::subscribe(pubsub_subscribe_req& req)
-{
-    // 要做的事很简单只要把要注册人的信息保存就可以了．
-    auto range = m_subscribes.equal_range(req.key);
-    for (auto it = range.first; it != range.second; ++it) {
-        if (it->second.app != req.app) {
-            continue;
-        }
-        if (it->second.actor != req.actor) {
-            continue;
-        }
-        return;  //已经存在了
-    }
 
-    m_subscribes.emplace(req.key, req.ip);
-    logDebug("pubsub_t::subscribe key:{}, app:{}, actor:{}", req.key, req.ip.app, req.ip.actor);
-}
-void publish(pubsub_publish_req& req, pubsub_publish_rep& rep)
-{
-    // 要做的事也很简单，只要把数据广播出去就可以了．
-    auto              range   = m_subscribes.equal_range(req.key);
-    channel_t::data_t dataDup = nullptr;
-    
-    // rep，数据返回，key和订阅的数量
-    rep.key  = req.key;
-    rep.size = m_subscribes.count(req.key);
-
-    for (auto it = range.first; it != range.second; ++it) {
-        // 复制一份数据因为要发给不同的订阅者
-        dataDup = (nullptr == dataDup)
-            ? codec_.unpack<channel_t::data_t>(req.zip)
-            : buffer_t::create(dataDup);
-
-        // m_rpc.package的使用主要是转发包还有另两接口，m_rpc.call，m_rpc.request
-        // 这边用了异步调用，同步调用可以m_rpc.package(it->second.app, it->second.actor, dataDup, channel_t::data_t& rep);
-        m_rpc.package(it->second.app, it->second.actor, dataDup, [key = req.key, ip = it->second, this](channel_t::data_t data) {
-            // xxxx
-            auto status = (nullptr != data ? *((int32_t*)(data->data())) : 1);
-        });
-    }
-}
-```
 ### 接口使用
 ```
 // 做个包装方便使用，actor只要是继承自oj_actor::actor_t的类就可以了．
