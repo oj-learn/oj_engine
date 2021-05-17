@@ -19,7 +19,7 @@ int main(void)
         //-----------------------------------------------------------------------------
         App->actorBind<test_t>("test");
         App->actorBind<qps_rpc_t>("qpsrpc");
-        App->actorBind<actor_showRpc_t>("showrpc");
+        App->actorBind<show_rpc_t>("showrpc");
         App->actorBind<pubsub_t>("pubsub");
         App->actorBind<daemon_t>("daemon");
         App->actorBind<session_daemon_t>("session_daemon");

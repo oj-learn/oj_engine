@@ -3,15 +3,16 @@
 ## 说明
   - c++ 实现的一个actor，demo
   - app是进程，actor是组件，接口是服务；
-  - 接口由某个actor实现，如有个db actor(数据库服务，查询表，更新表)，pubsub actor(注册订阅服务，观察者模式)
-  - actor可动态创建或配置，app启动时没有任何功能，只有创建了指定的actor才有意义；
-  - 如现在有３台机子或３个进程，指定app1加载pubsub，app2加载db，app3也加载db，哪么app2和app3的db将组成集群服务，当然也可以在同一个app上启动相同的actor，比如app2启动2个db，app3启动５个db哪么总共有8个db actor，总之启动数量超过1个时就变成了集群，有算法会选择使用哪个db actor服务；
+  - app启动时没有任何功能，只有创建了指定的actor才有意义；
+  - actor可动态创建或配置；
+  - 接口由某个actor实现，如:demo中的 daemon_t，pubsub_t(注册订阅服务，观察者模式)
+  - 同一种actor可以在同一个app上创建或在不同的机子上的app上创建，如果创建了相同的actor，哪么他们提供的服务相当于组成了集群；
   - 部分代码有些敏感信息等整理后再上传；
 
 ## 依赖&安装
   - linux
   - c++20
-  - gcc 10.2
+  - gcc 11.1
   - boost　库
   - cmake
 
@@ -31,6 +32,7 @@
 1. pubsub，订阅注册，观察者模式；
 2. daemon，简单实现一个守护actor，从appinfo启动app，app对应的actor，关闭app或者app中的actor，很简单自己看代码吧！！；
 3. session_daemon，一条session也是1个actor，关闭actor就是关闭session；
+4. qps_rpc_t定时调用show_rpc_t提供的接口，show_rpc_t统计接口被调用次数并输出；
 ---
 
 ### 接口声明及实现

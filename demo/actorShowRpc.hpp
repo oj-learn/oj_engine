@@ -16,7 +16,7 @@ void qpsRpcSyncCallRep(qps_rpc_async_req&)
 //-----------------------------------------------------------------------------
 // actor session_t
 //-----------------------------------------------------------------------------
-class actor_showRpc_t : public oj_actor::actor_t {
+class show_rpc_t : public oj_actor::actor_t {
 public:
     //-----------------------------------------------------------------------------
       std::atomic_llong g_connNum  = 0;
