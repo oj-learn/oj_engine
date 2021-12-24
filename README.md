@@ -30,6 +30,11 @@
 2. qps_rpc,show_rpc 测试同步调用接口和异步调用接口的性能；
 ---
 
+## 运行
+```
+./demo --config=config/demo_main.json
+```
+
 ### actor,接口声明及实现
 ```c++
 

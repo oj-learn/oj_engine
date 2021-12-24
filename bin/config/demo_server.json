@@ -1,0 +1,7 @@
+{"id":4568,"threads":4,"loglevel":"trace",
+"actors":[
+{"id":0,"make":"tcp","config":"{\"listen\":\"127.0.0.1:4568\",\"threads\":3}"},
+{"id":0,"make":"session_parent","config":"{\"ip\":\"127.0.0.1:4567\",\"keep\":60}"},
+{"id":456800,"make":"mysql","config":"{\"db_ip\":\"127.0.0.1\", \"user_name\":\"jj\", \"pwd\":\"123456\", \"db_name\":\"app\", \"timeout\":3, \"db_conn_num\":2}"},
+{"id":456801,"make":"showrpc","config":""}]
+}

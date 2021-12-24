@@ -1,0 +1,5 @@
+{"id":4569,"threads":4,"loglevel":"debug",
+"actors":[
+{"id":0,"make":"tcp","config":"{\"listen\":\"127.0.0.1:4569\",\"threads\":3}"},
+{"id":0,"make":"session_parent","config":"{\"ip\":\"127.0.0.1:4567\",\"keep\":60}"}]
+}
