@@ -1,26 +1,32 @@
 ﻿#pragma once
 
+#include "base/lock.h"
 #include <deque>
 #include <functional>
-#include <mutex>
+#include <memory>
 
 /*---------------------------------------------------------------------------------
 Push可多个线程，Pop只可以一个线程
 ---------------------------------------------------------------------------------*/
 template <typename xx_t>
 class queue_rw_t {
+public:
+    //-----------------------------------------------------------------------------
+    using lock_t = std::shared_ptr<ILockObj>;
+
 private:
     //-----------------------------------------------------------------------------
     int              m_sizeWrite;
-    std::mutex       m_mutexWrite;
+    lock_t           m_mutexWrite;
     std::deque<xx_t> m_queueWrite;  // 交换队列1
     std::deque<xx_t> m_queueRead;   // 交换队列2
 
 public:
     //-----------------------------------------------------------------------------
-    queue_rw_t()
+    queue_rw_t(lock_t lock = std::make_shared<CLockStdMutex>())
     {
-        m_sizeWrite = 0;
+        m_mutexWrite = lock;
+        m_sizeWrite  = 0;
     }
 
     //-----------------------------------------------------------------------------
@@ -29,7 +35,7 @@ public:
         m_queueRead.clear();
 
         {
-            std::lock_guard l(m_mutexWrite);
+            std::lock_guard l(*m_mutexWrite);
             m_sizeWrite = 0;
             m_queueWrite.clear();
         }
@@ -51,7 +57,7 @@ public:
     //-----------------------------------------------------------------------------
     void push(const xx_t& xx)
     {
-        std::lock_guard l(m_mutexWrite);
+        std::lock_guard l(*m_mutexWrite);
         m_queueWrite.emplace_back(xx);
         m_sizeWrite += 1;
     }
@@ -69,7 +75,7 @@ public:
     void pull(std::function<int(xx_t&)>&& fun)
     {
         if (m_queueRead.empty() && m_sizeWrite > 0) {
-            std::lock_guard l(m_mutexWrite);
+            std::lock_guard l(*m_mutexWrite);
             m_sizeWrite = 0;
             m_queueRead.swap(m_queueWrite);
         }

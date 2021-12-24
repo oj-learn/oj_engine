@@ -1,10 +1,10 @@
 #pragma once
 
 #include "spdlog/fmt/fmt.h"
-//#include "fmt/format.h"
 #include <source_location>
 #include <string>
-
+//#include "fmt/format.h"
+// #include <experimental/source_location>
 
 /*---------------------------------------------------------------------------------
 基本色碼表，高位元16進位表示底色，低位元16進位表示字色，組合範圍0~255 (參考:http://blog.wildsky.cc/posts/c_code_note/)
@@ -45,42 +45,41 @@ sink	: 对最终输出的抽象，例如文件，控制台...
 logger	: 记录器，需要绑定一个或多个sink，在每次日志调用时会选择正确的sink
 
 #include "spdlog/sinks/basic_file_sink.h"
-	// Create basic file logger (not rotated)
-	auto my_logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
+    // Create basic file logger (not rotated)
+    auto my_logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
 
 #include "spdlog/sinks/rotating_file_sink.h"
-	// Create a file rotating logger with 5mb size max and 3 rotated files
-	auto rotating_logger = spdlog::rotating_logger_mt("some_logger_name", "logs/rotating.txt", 1048576 * 5, 3);
+    // Create a file rotating logger with 5mb size max and 3 rotated files
+    auto rotating_logger = spdlog::rotating_logger_mt("some_logger_name", "logs/rotating.txt", 1048576 * 5, 3);
 
 #include "spdlog/sinks/daily_file_sink.h"
-	// Create a daily logger - a new file is created every day on 2:30am
-	auto daily_logger = spdlog::daily_logger_mt("daily_logger", "logs/daily.txt", 2, 30);
+    // Create a daily logger - a new file is created every day on 2:30am
+    auto daily_logger = spdlog::daily_logger_mt("daily_logger", "logs/daily.txt", 2, 30);
 
 #include "spdlog/async.h"
-	// default thread pool settings can be modified *before* creating the async logger:
-	// spdlog::init_thread_pool(32768, 1); // queue with max 32k items 1 backing thread.
-	auto async_file = spdlog::basic_logger_mt<spdlog::async_factory>("async_file_logger", "logs/async_log.txt");
-	// alternatively:
-	// auto async_file = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>("async_file_logger", "logs/async_log.txt");
+    // default thread pool settings can be modified *before* creating the async logger:
+    // spdlog::init_thread_pool(32768, 1); // queue with max 32k items 1 backing thread.
+    auto async_file = spdlog::basic_logger_mt<spdlog::async_factory>("async_file_logger", "logs/async_log.txt");
+    // alternatively:
+    // auto async_file = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>("async_file_logger", "logs/async_log.txt");
 ---------------------------------------------------------------------------------*/
-//struct config_logger_t;
+// struct config_logger_t;
 class log_t {
 public:
     int m_writeLevel;
 
 public:
     //-----------------------------------------------------------------------------
-    log_t();
-    //-----------------------------------------------------------------------------
     static log_t& singletion();
 
 public:
     //-----------------------------------------------------------------------------
+    void init(std::string path);
     void close();
     //-----------------------------------------------------------------------------
     void levelSet(const std::string level);
     //-----------------------------------------------------------------------------
-    //void registLogger(config_logger_t& cfg, bool default_ = false);
+    // void registLogger(config_logger_t& cfg, bool default_ = false);
     //-----------------------------------------------------------------------------
     int write(int logLevel, std::string&& data, const std::source_location location = std::source_location::current());
     //-----------------------------------------------------------------------------

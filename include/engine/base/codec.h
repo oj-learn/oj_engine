@@ -1,8 +1,9 @@
 #pragma once
 
-#include "./base.h"
-#include "./exception_t.h"
-#include "./log.h"
+#include "base/base.h"
+#include "base/exception_t.h"
+#include "base/log.h"
+#include "base/string_util.h"
 #include "iguana/iguana/json.hpp"
 #include "iguana/iguana/msgpack.hpp"
 #include <cxxabi.h>
@@ -20,53 +21,68 @@ head_code_t
 ---------------------------------------------------------------------------------*/
 enum class head_code_t : int16_t {
     null,
-    echo,
+    API_UP,
+    API_DOWN,
+    API_SYNC,
     REQUEST,
     RPC_ROUTE,
     PKG_ROUTE,
     SYNC_REP_ROUTE,
     ASYNC_REP_ROUTE,
+    ROUTETABLE,
+    POST,
     PKG,
-    redirect,
     OK,
     FAIL,
     UNKNOWN,
     TIMEOUT,
     CANCEL,
     CLOSE,
-    API_UP,
-    API_DOWN,
-    API_SYNC,
-    ROUTETABLE,
+
 };
 
 /*---------------------------------------------------------------------------------
-head_rep_t
+header_t
 ---------------------------------------------------------------------------------*/
-struct head_rep_t {
-    int64_t     id;
-    head_code_t code;
-    uint16_t    len;
-    int64_t     recvip;
-    int64_t     recvport;
-    int64_t     sendip;
-    int64_t     sendport;
+struct header_t {
+    long        id       = 0;
+    head_code_t code     = head_code_t::null;
+    uint16_t    len      = 0;
+    long        hash     = 0;
+    long        recvip   = 0;
+    long        recvport = 0;
+    long        sendip   = 0;
+    long        sendport = 0;
 };
 
 /*---------------------------------------------------------------------------------
-head_req_t
 ---------------------------------------------------------------------------------*/
-struct head_req_t {
-    int64_t     id;
-    head_code_t code;
-    uint16_t    len;
-    int64_t     hash;
-    int64_t     recvip;
-    int64_t     recvport;
-    int64_t     sendip;
-    int64_t     sendport;
+struct api_up_t {
+    long        appid;
+    long        actoid;
+    long        hash;
+    int         mask;
+    std::string name;
 };
+REFLECTION(api_up_t, appid, actoid, hash, mask, name);
 
+/*---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------*/
+struct api_down_t {
+    long appid;
+    long actoid;
+};
+REFLECTION(api_down_t, appid, actoid);
+
+
+/*---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------*/
+template <typename T>
+concept unpack_requires = requires(T t)
+{
+    t.data();
+    t.size();
+};
 
 /*---------------------------------------------------------------------------------
 codec_t
@@ -87,24 +103,26 @@ public:
 public:
     //-----------------------------------------------------------------------------
     template <typename T>
-    T unpack(char const* data, int32_t length);
+    T unpack(char const* data, int length);
     //-----------------------------------------------------------------------------
+    template <typename T>
+    T unpack(zip_t& data);
     template <typename T>
     T unpack(channel_t::data_t& data);
     //-----------------------------------------------------------------------------
     template <typename T>
-    T unpack(zip_t& data);
+    bool fromJson(T&& t, std::string& jsonStr);
     //-----------------------------------------------------------------------------
     template <typename T>
-    bool fromJson(T& t, std::string& jsonStr);
+    bool fromJson0(T&& t, std::string& jsonStr);
     //-----------------------------------------------------------------------------
     template <typename T>
-    bool toJson(T& t, std::string& jsonStr);
+    bool toJson(T&& t, std::string& jsonStr);
 
 public:
     //-----------------------------------------------------------------------------
     template <typename... T>
-    static auto buffer_t(int32_t type, T&&... ts) -> buffer_t::sptr_t;
+    static auto buffer_t(int type, T&&... ts) -> buffer_t::sptr_t;
 };
 
 /*---------------------------------------------------------------------------------
@@ -121,17 +139,18 @@ inline zip_t codec_t::pack(T&& t)
 copy elison 编译器优化技术，直接返回 buffer
 ---------------------------------------------------------------------------------*/
 template <>
-zip_t codec_t::pack(head_req_t& t);
+inline zip_t codec_t::pack(header_t& t)
+{
+    return zip_t{ (char*)(&t), (char*)(&t) + sizeof(header_t) };
+}
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <>
-zip_t codec_t::pack(head_rep_t& t);
-
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-template <>
-zip_t codec_t::pack(zip_t& t);
+inline zip_t codec_t::pack(zip_t& t)
+{
+    return std::move(t);
+}
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
@@ -141,7 +160,7 @@ zip_t codec_t::pack(channel_t::data_t& t);
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <typename... T>
-zip_t codec_t::packs(T&&... ts)
+inline zip_t codec_t::packs(T&&... ts)
 {
     zip_t ret;
     auto  merge = [&ret](auto&& arg) {
@@ -151,11 +170,6 @@ zip_t codec_t::packs(T&&... ts)
     (merge(pack(std::forward<T>(ts))), ...);
     return ret;
 }
-
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-template <>
-zip_t codec_t::packs(int64_t& guidapp, int64_t& guid, channel_t::data_t& data);
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
@@ -172,7 +186,7 @@ inline zip_t codec_t::packArgs(Args&&... args) const
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <typename t_result>
-inline t_result codec_t::unpack(char const* data, int32_t length)
+inline t_result codec_t::unpack(char const* data, int length)
 {
     try {
         t_result          t;
@@ -190,7 +204,7 @@ inline t_result codec_t::unpack(char const* data, int32_t length)
         auto        n2        = abi::__cxa_demangle(n1, buff, &size, &status);
         std::string n3        = n2;
         //-----------------------------------------------------------------------------
-        auto message = stringByArgs("unpack exception type:", n3, "Args not match!");
+        auto message = oj_string::stringByArgs("unpack exception type:", n3, "Args not match!");
         //-----------------------------------------------------------------------------
         throw std::move(exception_t{ int16_t(head_code_t::FAIL), std::move(message) });
     }
@@ -199,27 +213,25 @@ inline t_result codec_t::unpack(char const* data, int32_t length)
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <>
-head_req_t* codec_t::unpack(char const* data, int32_t length);
+inline header_t* codec_t::unpack(char const* data, int length)
+{
+    return (header_t*)(data);
+}
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <>
-head_rep_t* codec_t::unpack(char const* data, int32_t length);
-
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-template <>
-channel_t::data_t codec_t::unpack(char const* data, int32_t length);
+inline channel_t::data_t codec_t::unpack(char const* data, int length)
+{
+    return buffer_t::create(std::string{ data + sizeof(int), length - sizeof(int) }, *((int*)(data)));
+}
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <typename T>
 inline T codec_t::unpack(zip_t& zip)
 {
-    auto buffer = zip.data();
-    auto size   = zip.size();
-    //-----------------------------------------------------------------------------
-    return this->unpack<T>(buffer, size);
+    return this->unpack<T>(zip.data(), zip.size());
 }
 
 /*---------------------------------------------------------------------------------
@@ -227,38 +239,43 @@ inline T codec_t::unpack(zip_t& zip)
 template <typename T>
 inline T codec_t::unpack(channel_t::data_t& data)
 {
-    auto buffer = data->data();
-    auto size   = data->size();
-    //-----------------------------------------------------------------------------
-    return this->unpack<T>(buffer, size);
+    return this->unpack<T>(data->data(), data->size());
 }
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <typename... T>
-inline auto codec_t::buffer_t(int32_t type, T&&... ts) -> buffer_t::sptr_t
+inline auto codec_t::buffer_t(int type, T&&... ts) -> buffer_t::sptr_t
 {
     auto zip  = codec_.packs(std::forward<T>(ts)...);
     auto data = buffer_t::create(std::move(zip), type);
     return data;
 }
 
-
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <typename T>
-inline bool codec_t::fromJson(T& t, std::string& jsonStr)
+inline bool codec_t::fromJson(T&& t, std::string& jsonStr)
 {
-    return iguana::json::from_json(t, jsonStr.data(), jsonStr.length());
+    return iguana::json::from_json(std::forward<T>(t), jsonStr.data(), jsonStr.length());
+}
+
+/*---------------------------------------------------------------------------------
+对字段，顺序，存在无要求，要更多的计算
+---------------------------------------------------------------------------------*/
+template <typename T>
+inline bool codec_t::fromJson0(T&& t, std::string& jsonStr)
+{
+    return iguana::json::from_json0(std::forward<T>(t), jsonStr.data(), jsonStr.length());
 }
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 template <typename T>
-inline bool codec_t::toJson(T& t, std::string& jsonStr)
+inline bool codec_t::toJson(T&& t, std::string& jsonStr)
 {
     iguana::string_stream ss;
-    iguana::json::to_json(ss, t);
+    iguana::json::to_json(ss, std::forward<T>(t));
 
     jsonStr = ss.str();
     return true;

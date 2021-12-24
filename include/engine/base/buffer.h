@@ -15,64 +15,64 @@ public:
 
 protected:
     //-----------------------------------------------------------------------------
-    char*   m_buff     = nullptr;
-    int32_t m_buffSize = 0;
-    int32_t m_type     = 0;
-    int32_t m_posRead  = 0;
-    int32_t m_posWrite = 0;
-    int64_t m_extra    = 0;
+    char* m_buff     = nullptr;
+    int   m_buffSize = 0;
+    int   m_type     = 0;
+    int   m_posRead  = 0;
+    int   m_posWrite = 0;
+    long  m_extra    = 0;
 
 public:
     //-----------------------------------------------------------------------------
-    buffer_t(char* buffer = nullptr, int32_t size = 0, int32_t type = 0);
+    buffer_t(char* buffer = nullptr, int size = 0, int type = 0);
     //-----------------------------------------------------------------------------
     virtual ~buffer_t();
     //-----------------------------------------------------------------------------
     static auto create() -> sptr_t;
     //-----------------------------------------------------------------------------
-    static auto create(int32_t nSize, int32_t type = 0) -> sptr_t;
+    static auto create(int nSize, int type = 0) -> sptr_t;
     //-----------------------------------------------------------------------------
-    static auto create(std::vector<char>&& buffer, int32_t type = 0) -> sptr_t;
+    static auto create(std::vector<char>&& buffer, int type = 0) -> sptr_t;
     //-----------------------------------------------------------------------------
-    static auto create(std::string&& buffer, int32_t type = 0) -> sptr_t;
+    static auto create(std::string&& buffer, int type = 0) -> sptr_t;
     //-----------------------------------------------------------------------------
-    static auto create(char* buffer, int32_t nSize, int32_t type = 0) -> sptr_t;
+    static auto create(char* buffer, int nSize, int type = 0) -> sptr_t;
     //-----------------------------------------------------------------------------
     static auto create(sptr_t data) -> sptr_t;
 
 public:
     //-----------------------------------------------------------------------------
-    auto write(const char* buffer, const int32_t bufferSize) -> int32_t;
+    auto write(const char* buffer, const int bufferSize) -> int;
     //-----------------------------------------------------------------------------
-    void writeAsync(char*& ptrRet, int32_t& sizeRet);
+    void writeAsync(char*& ptrRet, int& sizeRet);
     //-----------------------------------------------------------------------------
-    void writeAsyncFinish(int32_t nSize);
+    void writeAsyncFinish(int nSize) { m_posWrite += nSize; }
     //-----------------------------------------------------------------------------
-    auto read(char* const buffer, const int32_t bufferSize) -> int32_t;
+    auto read(char* const buffer, const int bufferSize) -> int;
     //-----------------------------------------------------------------------------
-    void readAsync(char*& ptrRet, int32_t& sizeRet);
+    void readAsync(char*& ptrRet, int& sizeRet);
     //-----------------------------------------------------------------------------
-    void readAsyncFinish(int32_t nSize);
+    void readAsyncFinish(int nSize) { m_posRead += nSize; }
 
 public:
     //-----------------------------------------------------------------------------
-    auto data() -> const char*;
+    auto data() -> const char* { return m_buff; }
     //-----------------------------------------------------------------------------
-    auto size() -> int32_t;
+    auto size() -> int { return m_buffSize; }
     //-----------------------------------------------------------------------------
-    auto type() -> int32_t;
-    void typeSet(int32_t type);
+    auto type() -> int { return m_type; }
+    void typeSet(int type) { m_type = type; }
     //-----------------------------------------------------------------------------
-    auto extra() -> int64_t;
-    void extraSet(int64_t v);
+    auto extra() -> long { return m_extra; }
+    void extraSet(long v) { m_extra = v; }
     //-----------------------------------------------------------------------------
-    void posReset();
+    void posReset() { m_posWrite = 0, m_posRead = 0; }
     //-----------------------------------------------------------------------------
-    auto writeSizeRemain() -> int32_t;
+    auto writeSizeRemain() -> int { return m_buffSize - m_posWrite; }
     //-----------------------------------------------------------------------------
-    auto readSizeRemain() -> int32_t;
+    auto readSizeRemain() -> int { return m_posWrite - m_posRead; }
     //-----------------------------------------------------------------------------
-    bool readFull();
+    bool readFull() { return m_posRead == m_buffSize; }
 };
 
 /*---------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ private:
 
 public:
     //-----------------------------------------------------------------------------
-    data_dynamic_t(int32_t nSize, int32_t type)
+    data_dynamic_t(int nSize, int type)
         : m_buffer(nSize <= 0 ? 1 : nSize, 0)
     {
         m_buff     = m_buffer.data();
@@ -92,7 +92,7 @@ public:
         m_type     = type;
     }
     //-----------------------------------------------------------------------------
-    data_dynamic_t(std::vector<char>&& buffer, int32_t type)
+    data_dynamic_t(std::vector<char>&& buffer, int type)
         : m_buffer(std::move(buffer))
     {
         m_buff     = m_buffer.data();
@@ -110,7 +110,7 @@ private:
 
 public:
     //-----------------------------------------------------------------------------
-    data_string_t(std::string& buffer, int32_t type)
+    data_string_t(std::string& buffer, int type)
         : m_buffer(std::move(buffer))
     {
         m_buff     = m_buffer.data();
@@ -122,7 +122,7 @@ public:
 /*---------------------------------------------------------------------------------
 静态大小
 ---------------------------------------------------------------------------------*/
-template <int32_t BUFFER_SIZE = 4096>
+template <int BUFFER_SIZE = 4096>
 class data_static_t : public buffer_t {
 private:
     char m_buffer[BUFFER_SIZE] = { 0 };

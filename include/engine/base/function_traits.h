@@ -159,6 +159,13 @@ typename function_traits<Function>::pointer to_function_pointer(const Function &
     return static_cast<typename function_traits<Function>::pointer>(lambda);
 }
 
+/*---------------------------------------------------------------------------------
+???
+---------------------------------------------------------------------------------*/
+template <typename T>
+concept fun_trait_able = function_traits<T>::callable == 1;
+
+
 //-----------------------------------------------------------------------------
 template <typename T>
 struct is_smart_pointer {
@@ -251,7 +258,6 @@ public:
     using type = typename bind_traits<index_sequence_t, typename function_traits_t::return_type, args_tuple_t>::type;
 };
 
-// dealing with bugs from gcc, we cannot pass a constant reference of boost::arg<Size> object to std::bind
 template <typename T>
 struct forward {
     template <typename T1>
@@ -261,15 +267,6 @@ struct forward {
     }
 };
 
-// thus, we wrap std::forward so that we can directly return a boost::arg<Size> object.
-// template <int Size>
-// struct forward<boost::arg<Size> const &> {
-//     template <typename T1>
-//     static auto apply(T1 &&t1) noexcept
-//     {
-//         return t1;
-//     }
-// };
 
 template <typename F, typename Arg0, typename... Args>
 auto bind_impl(std::false_type /*IsNoPmf*/, F &&f, Arg0 &&arg0, Args &&...args) -> typename bind_to_function<F, Arg0, Args...>::type
@@ -328,7 +325,7 @@ auto bind_self(F &&f, Args &&...args)
 {
     using is_pmf = typename std::is_member_function_pointer<F>::type;
 
-    return bind_impl(is_pmf{}, std::forward<F>(f), forward<Args>::apply(args)...);
+    return bind_impl(is_pmf{}, std::forward<F>(f), forward<Args>(args)...);
 }
 
 
@@ -392,7 +389,7 @@ struct meta_hash_t {
     template <typename T>
     static constexpr auto name_pretty()
     {
-        //name_detail() is like: static constexpr const char* ecs::meta_hash_t::name_detail() [with T = rstudio::math::Vector3]
+        // name_detail() is like: static constexpr const char* ecs::meta_hash_t::name_detail() [with T = rstudio::math::Vector3]
         std::string_view pretty_name = name_detail<T>();
         std::string_view prefix      = "static constexpr const char* meta_hash_t::name_detail() [with T = ";
         std::string_view suffix      = "]";
@@ -404,7 +401,7 @@ struct meta_hash_t {
     template <typename T>
     static constexpr auto name_pretty()
     {
-        //name_detail() is like "const char *__cdecl ecs::meta_hash_t::name_detail<class rstudio::math::Vector3>(void)"
+        // name_detail() is like "const char *__cdecl ecs::meta_hash_t::name_detail<class rstudio::math::Vector3>(void)"
         std::string_view pretty_name = name_detail<T>();
         std::string_view prefix = "const char *__cdecl ecs::meta_hash_t::name_detail<";
         std::string_view suffix = ">(void)";
@@ -419,16 +416,16 @@ struct meta_hash_t {
 
     //-----------------------------------------------------------------------------
     template <typename T>
-    //static constexpr size_t hash()
+    // static constexpr size_t hash()
     static size_t hash()
     {
         static_assert(!std::is_reference_v<T>, "dont send references to hash");
         static_assert(!std::is_const_v<T>, "dont send const to hash");
 
-        using hash_engine_t = hash_tmpl<bkdr_hash<std::string>, int64_t>;
+        using hash_engine_t = hash_tmpl<bkdr_hash<std::string>, long>;
         static hash_engine_t s_hash;
         return s_hash(name_detail<T>());
-        //return hash_fnv1a(name_detail<T>());
+        // return hash_fnv1a(name_detail<T>());
     }
 };
 

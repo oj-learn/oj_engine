@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "./../actor/actor.h"
-#include "./../base/base.h"
+#include "actor/actor.h"
+#include "base/base.h"
 #include <future>
 
 /*---------------------------------------------------------------------------------
@@ -10,8 +10,8 @@ app_t
 class app_t final : public oj_actor::actor_t {
 public:
     //-----------------------------------------------------------------------------
-    using actors_t      = std::unordered_map<int64_t, actor_sptr_t>;
-    using actor_name_t  = std::unordered_map<std::string, std::unordered_set<int64_t>>;
+    using actors_t      = std::unordered_map<long, actor_sptr_t>;
+    using actor_name_t  = std::unordered_map<std::string, std::unordered_set<long>>;
     using actor_bind_t  = std::function<actor_sptr_t(void)>;
     using actor_binds_t = std::unordered_map<std::string, actor_bind_t>;
     using threads_t     = std::vector<std::future<void>>;
@@ -32,16 +32,16 @@ public:
 
 public:
     //-----------------------------------------------------------------------------
-    status_t open();
+    status_t open(int argc, char* argv[]);
     status_t run();
 
 public:
     //-----------------------------------------------------------------------------
-    //actor 服务, actor开头;
+    // actor 服务, actor开头;
     //-----------------------------------------------------------------------------
-    auto actorGet(int64_t guid) -> actor_sptr_t;
+    auto actorGet(long guid) -> actor_sptr_t;
     auto actorGet(const std::string& name) -> actor_sptr_t;
-    auto actorMake(const std::string& name, std::string mark = "", int64_t guid = 0) -> actor_sptr_t;
+    auto actorMake(const std::string& name, std::string mark = "", long guid = 0) -> actor_sptr_t;
     void actorFor(std::function<int(actor_sptr_t&)>&& cb);
     void actorFor(const std::string& name, std::function<int(actor_sptr_t&)>&& cb);
     //-----------------------------------------------------------------------------
@@ -82,5 +82,5 @@ private:
     status_t initLog();
     status_t initThread();
     status_t initSignal();
-    status_t initActor();
+    status_t actor_run(actor_sptr_t, std::string, std::string);
 };

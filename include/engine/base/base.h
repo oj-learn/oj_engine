@@ -6,10 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <random>
-#include <regex>
 #include <shared_mutex>
-#include <sstream>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <uuid/uuid.h>
@@ -18,23 +15,48 @@
 命名规则
 1: 类型统一 xxx_t
 2: 函数统一 小写+下划线
-3: 变量统一 小 
+3: 变量统一 小
 
-sum  // 加
-difference // 减
-product // 乘
-quotient // 除
-remainder // 求余
-父(parent)、子(child)和同胞(sibling)
-hdr 头
-rbr 红黑树
-fd 
-queue 队列
-wq 等待队列
+描述部分：
+Elapsed		时间过去；消逝
+redirect    重定向
+expires     失效，终止, 到期
+duration    时长
+deltaTime   增量时间
+span        跨度
+Lnk			链接
+Max			最大
+Min			最小
+sub         减
+dec         增1
+inc         减1
+difference  减
+product     乘
+quotient    除 quot
+remainder   求余 rem
+Init		初始化
+T/temp		临时
+Src			源
+Dest		目的
+Bottom		底部
+equal		等于
+below		低于
+above		高于
+DEF			#define
+parent      父
+child       子
+sibling     同胞
+oblique     倾斜,斜角
+rbr         红黑树
+raw         原始的
+queue       队列
+wq          等待队列
+positive    增益
+negative    减益
+fd
 entry
-redirect 重定向
-delta 
-expires
+
+
 ---------------------------------------------------------------------------------*/
 
 //注释方式 1
@@ -48,9 +70,13 @@ expires
 /***************************************  ***************************************/
 
 /*---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------*/
+using uint = unsigned int;
+
+/*---------------------------------------------------------------------------------
 状态定义
 ---------------------------------------------------------------------------------*/
-enum class status_t : int32_t {
+enum class status_t : int {
     null,
     unknow,
     ptr,
@@ -98,37 +124,6 @@ struct channel_t {
 
 //---------------------------------------------------------------------------------
 
-/*---------------------------------------------------------------------------------
-将参数拼接成string
-//typename... Args模板参数包，是N个类型的集合， const Args&... args函数参数包，是N个参数的集合。
----------------------------------------------------------------------------------*/
-template <typename... Args>
-inline std::string stringByArgs(const Args&... args)
-{
-    auto toStr = [](auto t) -> auto
-    {
-        std::ostringstream ss;
-        ss << t << " ";
-        return std::move(ss.str());
-    };
-
-    return std::move((toStr(args) + ...));
-}
-
-/*---------------------------------------------------------------------------------
-通过正则表达式 delim
-分隔字符串
----------------------------------------------------------------------------------*/
-template <typename E, typename TR = std::char_traits<E>, typename AL = std::allocator<E>, typename _str_type = std::basic_string<E, TR, AL>>
-std::vector<_str_type> stringSplit(const std::basic_string<E, TR, AL>& in, const std::basic_string<E, TR, AL>&& delim)
-{
-    std::basic_regex<E> re{ delim };
-    return std::vector<_str_type>{
-        //-1,相反的，如果不填，结果是找出delim
-        std::regex_token_iterator<typename _str_type::const_iterator>(std::begin(in), std::end(in), re, -1),
-        std::regex_token_iterator<typename _str_type::const_iterator>()
-    };
-}
 
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
@@ -136,9 +131,14 @@ std::vector<_str_type> stringSplit(const std::basic_string<E, TR, AL>& in, const
 /*---------------------------------------------------------------------------------
 GUID
 ---------------------------------------------------------------------------------*/
-int64_t guidGen();
+long        guidGen();
+std::string guidGenStr();
 
 /*---------------------------------------------------------------------------------
 rand
 ---------------------------------------------------------------------------------*/
-int32_t rand(int32_t min, int32_t max);
+int rand(int min, int max);
+
+/*---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------*/
+bool randTrigger(int weight, int max = 1000);

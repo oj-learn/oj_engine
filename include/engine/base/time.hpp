@@ -2,51 +2,58 @@
 // 和系统time.h冲突　命名为 time.hpp
 
 #include <chrono>
+#include <functional>
+#include <memory>
 #include <string>
 
+namespace oj_time {
 
-/*************************************** time_elapsed_t ***************************************/
+/*---------------------------------------------------------------------------------
+定义毫秒,秒，级别的时钟类型，选用最高精度 的clock
+---------------------------------------------------------------------------------*/
+using clock_t     = std::chrono::high_resolution_clock;
+using timepoint_t = std::chrono::time_point<clock_t, clock_t::duration>;
+
+/*************************************** elapsed_t ***************************************/
+
 /*---------------------------------------------------------------------------------
 time_elapsed_t
-
 ---------------------------------------------------------------------------------*/
-class time_elapsed_t {
-    //-----------------------------------------------------------------------------
-    //定义毫秒,秒，级别的时钟类型，选用最高精度 的clock
-    using clock_t     = std::chrono::high_resolution_clock;
-    using timepoint_t = std::chrono::time_point<clock_t, clock_t::duration>;
-
+class elapsed_t {
 private:
     //-----------------------------------------------------------------------------
     timepoint_t m_timePoint;
 
 public:
     //-----------------------------------------------------------------------------
-    time_elapsed_t();
+    elapsed_t();
 
 public:
     //-----------------------------------------------------------------------------
     void reset();
     //-----------------------------------------------------------------------------
-    int64_t hours() const;
+    long hours() const;
     //-----------------------------------------------------------------------------
-    int64_t minutes() const;
+    long minutes() const;
     //-----------------------------------------------------------------------------
-    int64_t seconds() const;
+    long seconds() const;
     //-----------------------------------------------------------------------------
-    int64_t milli() const;
+    long milli() const;
     //-----------------------------------------------------------------------------
-    int64_t micro() const;
+    long micro() const;
     //-----------------------------------------------------------------------------
-    int64_t nano() const;
+    long nano() const;
 };
 
 /*************************************** xx ***************************************/
 /*---------------------------------------------------------------------------------
 timestamp
 ---------------------------------------------------------------------------------*/
-int64_t timestamp();
-int64_t timems();
+long timestamp();
+long timestamp_ms();
+long timestamp_micro();
+long time_elapsed_app();
+
 
 /*---------------------------------------------------------------------------------
 timeIsFormat
@@ -56,15 +63,25 @@ bool timeIsFormat(const std::string& theTime);
 /*---------------------------------------------------------------------------------
 timeSameWeek
 ---------------------------------------------------------------------------------*/
-bool timeSameWeek(int64_t t1, int64_t t2);
+bool timeSameWeek(long t1, long t2);
 
 /*---------------------------------------------------------------------------------
 timeToStamp
 ---------------------------------------------------------------------------------*/
-int64_t timeFormatToStamp(const std::string& theTime);
+long timeFormatToStamp(const std::string& theTime);
 
 /*---------------------------------------------------------------------------------
 timeToFormat
 y:年 m:月 d:日 h:时 m:分 s:秒
 ---------------------------------------------------------------------------------*/
-std::string timeStampToFormat(int64_t theTime, std::string timeformat = "y:m:d h:m:s");
+std::string timeStampToFormat(long theTime, std::string timeformat = "y:m:d h:m:s");
+
+
+/*---------------------------------------------------------------------------------
+timer
+---------------------------------------------------------------------------------*/
+auto timer_once(int ms, std::function<void()>&& cb) -> std::shared_ptr<void>;
+auto timer_loop(int ms, std::function<int()>&& cb) -> std::shared_ptr<void>;
+void timer_cancel(std::shared_ptr<void> timer);
+
+}  // namespace oj_time

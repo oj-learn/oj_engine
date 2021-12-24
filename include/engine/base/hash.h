@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
@@ -30,7 +31,7 @@ struct bkdr_hash {
     template <typename ResultT>
     static auto hash(argument_type const& arg)
     {
-        return hash_impl<ResultT>(reinterpret_cast<uint8_t const*>(arg.c_str()), arg.size() * sizeof(typename argument_type::value_type));
+        return hash_impl<ResultT>(reinterpret_cast<uint8_t const*>(arg.data()), arg.size() * sizeof(typename argument_type::value_type));
     }
 
 private:
@@ -51,4 +52,4 @@ private:
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
-int64_t hash_name_t(std::string name);
+long hash_name_t(std::string_view name);

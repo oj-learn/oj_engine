@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <string>
 
@@ -11,11 +12,11 @@ namespace oj_file {
 directory_entry 理解为　dir 内的　item
 只遍历指定目录并没有遍历子目录
 ---------------------------------------------------------------------------------*/
-bool dirEarch(std::string_view path, std::function<int(std::filesystem::directory_entry&)>&& cb);
+bool dirEarch(std::string_view path, std::function<int(const std::filesystem::directory_entry&)>&& cb);
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
-bool dirEarchAll(std::string_view path, std::function<int(std::filesystem::directory_entry&)>&& cb);
+bool dirEarchAll(std::string_view path, std::function<int(const std::filesystem::directory_entry&)>&& cb);
 
 /*---------------------------------------------------------------------------------
 创建目录

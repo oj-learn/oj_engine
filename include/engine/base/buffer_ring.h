@@ -15,35 +15,35 @@ class buffer_ring_t {
 
 private:
     //-----------------------------------------------------------------------------
-    int32_t      m_blockCount;
-    int32_t      m_blockSize;
-    int64_t      m_sizeWrite;
-    int64_t      m_sizeRead;
+    int          m_blockCount;
+    int          m_blockSize;
+    long         m_sizeWrite;
+    long         m_sizeRead;
     block_list_t m_blockList;
     block_iter_t m_blockItWrite;
     block_iter_t m_blockItRead;
 
 public:
     //-----------------------------------------------------------------------------
-    buffer_ring_t(int32_t nBlockCount, int32_t nBlockSize);
+    buffer_ring_t(int nBlockCount, int nBlockSize);
     //-----------------------------------------------------------------------------
     ~buffer_ring_t();
 
 public:
     //-----------------------------------------------------------------------------
-    auto write(const char* buffer, const int32_t bufferSize) -> int32_t;
+    auto write(const char* buffer, const int bufferSize) -> int;
     //-----------------------------------------------------------------------------
-    auto writeAsync(char*& ptrRet, int32_t& sizeRet) -> int32_t;
+    auto writeAsync(char*& ptrRet, int& sizeRet) -> int;
     //-----------------------------------------------------------------------------
-    void writeAsyncFinish(int32_t nSize);
+    void writeAsyncFinish(int nSize);
 
 public:
     //-----------------------------------------------------------------------------
-    auto read(char* const buffer, const int32_t bufferSize) -> int32_t;
+    auto read(char* const buffer, const int bufferSize) -> int;
     //-----------------------------------------------------------------------------
-    auto readAsync(char*& ptrRet, int32_t& sizeRet) -> int32_t;
+    auto readAsync(char*& ptrRet, int& sizeRet) -> int;
     //-----------------------------------------------------------------------------
-    void readAsyncFinish(int32_t nSize);
+    void readAsyncFinish(int nSize);
     //-----------------------------------------------------------------------------
-    auto readSizeRemain() -> int32_t;
+    auto readSizeRemain() -> int { return m_sizeWrite - m_sizeRead; }
 };

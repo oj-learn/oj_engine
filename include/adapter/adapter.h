@@ -4,27 +4,16 @@
 #include "app/app.h"
 
 /***************************************  ***************************************/
-
-
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-void tcpConnect(std::string addrport, std::string mark = "", int64_t guid = 0);
-
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 void consoleCbSet(std::string cmd, std::function<void(std::vector<std::string>&)>&& cb, std::string note = "");
-
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-void adaper_pubsub_subscribe(std::string key, actor_sptr_t actor);
-void adaper_pubsub_publish(std::string key, channel_t::data_t data);
 
 
 /*---------------------------------------------------------------------------------
 db 表创建
 ---------------------------------------------------------------------------------*/
 template <typename t_table>
-void adaper_dbCreate(std::string key_auto = "", std::string key_unique = "", std::vector<std::string> notnull = {})
+void adaper_dbCreate(std::string key_auto = "", std::string key_union = "", std::vector<std::string> key_indexs = {}, std::vector<std::string> key_unique = {}, std::vector<std::string> notnull = {})
 {
     static_assert(iguana::is_reflection_v<t_table>, "no decl type!");
 
@@ -34,12 +23,14 @@ void adaper_dbCreate(std::string key_auto = "", std::string key_unique = "", std
     req.notnull    = std::move(notnull);
     req.key_auto   = std::move(key_auto);
     req.key_unique = std::move(key_unique);
+    req.key_union  = std::move(key_union);
+    req.key_index  = std::move(key_indexs);
 
 
     auto& App = app_t::singletion();
 
     reflect::db_create_rep rep;
-    App->call(api_db_create, req, rep);
+    App->call(req, rep);
 
     if (rep.message != "") {
         logError("adaper_dbCreate req.table_name:{} message:{}", req.table_name, rep.message);
@@ -63,7 +54,7 @@ std::vector<t_table> adaper_dbQuery(std::string conditions = "")
     auto& App = app_t::singletion();
 
     reflect::db_query_rep rep;
-    App->call(api_db_query, req, rep);
+    App->call(req, rep);
 
     result_t result;
     if (rep.cmd == req.cmd && rep.message == "") {
@@ -92,7 +83,7 @@ void adaper_dbUpdate(std::vector<t_table>& tables)
     auto& App = app_t::singletion();
 
     reflect::db_update_rep rep;
-    App->call(api_db_update, req, rep);
+    App->call(req, rep);
 
     if (rep.message != "") {
         logError("adaper_dbCreate req.table_name:{} message:{}", req.table_name, rep.message);
