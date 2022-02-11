@@ -85,7 +85,7 @@ private:
 public:
     //-----------------------------------------------------------------------------
     data_dynamic_t(int nSize, int type)
-        : m_buffer(nSize <= 0 ? 1 : nSize, 0)
+        : m_buffer(nSize, 0)
     {
         m_buff     = m_buffer.data();
         m_buffSize = nSize;
@@ -129,9 +129,10 @@ private:
 
 public:
     //-----------------------------------------------------------------------------
-    data_static_t()
+    data_static_t(int type = 0)
     {
         m_buff     = m_buffer;
         m_buffSize = BUFFER_SIZE;
+        m_type     = type;
     }
 };
