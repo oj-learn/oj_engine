@@ -4,13 +4,21 @@
 #include "base/log.h"
 
 /*---------------------------------------------------------------------------------
+同一个app中：
+test_rpcSyncCall　调用50000次大概消耗1.5s
+
+不同app中 A->B<-C:
+A 调用　C　的test_rpcSyncCall　调用20000次大概消耗:13s，每秒大概1500次
+A 调用　C　的test_rpcAsyncCall 调用60000次大概消耗:1.1s
 ---------------------------------------------------------------------------------*/
 class qps_rpc_t : public oj_actor::actor_t {
 public:
     //-----------------------------------------------------------------------------
-    long m_pause;
-    int  m_run   = 0;
-    int  m_times = 0;
+    long               m_pause;
+    int                m_run   = 0;
+    int                m_times = 0;
+    int                s_asyncRep;
+    oj_time::elapsed_t s_asyncEp;
 
 public:
     //-----------------------------------------------------------------------------
@@ -38,12 +46,18 @@ public:
         if (m_run <= 0) {
             return status_t::null;
         }
+
         //-----------------------------------------------------------------------------
-        if (1 == m_run){
-            this->test_rpcAsyncCall();
-        }
-        if (2 == m_run){
-            this->test_rpcSyncCall();
+        switch (m_run) {
+            case 1:
+                this->test_rpcAsyncCall();
+                break;
+            case 2:
+                this->test_rpcSyncCall();
+                break;
+            case 3:
+                this->test_rpcSyncCall_local();
+                break;
         }
         //-----------------------------------------------------------------------------
         return status_t::null;
@@ -57,9 +71,7 @@ public:
         //     return 0;
         // }
 
-        m_pause = oj_time::timestamp_ms();
-        static int                s_asyncRep;
-        static oj_time::elapsed_t s_asyncEp;
+        m_pause    = oj_time::timestamp_ms();
         s_asyncRep = 0;
         s_asyncEp.reset();
 
@@ -99,6 +111,18 @@ public:
         }
         //-----------------------------------------------------------------------------
         logDebug("qps_rpc_t sync　调用了 {} 次, elapsed:{}(ms)", m_times, ep.milli());
+
+        return 0;
+    }
+
+    //-----------------------------------------------------------------------------
+    int test_rpcSyncCall_local()
+    {
+        // if (oj_time::timestamp_ms() - m_pause < 0) {
+        //     return 0;
+        // }
+
+        m_pause = oj_time::timestamp_ms();
 
         return 0;
     }
