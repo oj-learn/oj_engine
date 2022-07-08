@@ -42,7 +42,7 @@
 "actors":[
 {"id":0,"make":"tcp","config":"{\"listen\":\"127.0.0.1:4567\",\"threads\":2}"},
 {"id":456700,"make":"testa","config":""},
-{"id":456800,"make":"mysql","config":"{\"db_ip\":\"127.0.0.1\", \"user_name\":\"xx\", \"pwd\":\"xxx\", \"db_name\":\"app\"}]
+{"id":456800,"make":"mysql","config":"{\"db_ip\":\"127.0.0.1\", \"user_name\":\"xx\", \"pwd\":\"xxx\", \"db_name\":\"app\"}"}]
 }
 ```
 
