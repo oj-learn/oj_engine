@@ -9,7 +9,7 @@
   - 方便，新建actor，接口使用，都非常方便；
   - actor可动态创建关闭，每个actor独立配置；
   - 解偶，actor模型很容易实现分布式服务；
-  - 容错，把actor分散规类部署，一但发生dmp或修改代码只要重构建相应的actor代码再部署，降低了影响范围；
+  - 容错，把actor分散规类部署，一但发生dmp或修改代码只要重编译代码后再临时部署actor所在节点，降低了影响范围；
   - 高并发，使用协程，每个actor都由一个协程独立处理自己的数据；
   - 同一种actor可以在同一个app上创建或在不同的机子上的app上创建，如果创建了相同的actor，哪么他们提供的服务相当于组成了集群；
 
@@ -18,19 +18,35 @@
   - c++20
   - gcc 11.1
   - cmake
+  - libmariadb,libuuid
 
 ```shell
  sudo apt-get install cmake autotools-dev autoconf automake uuid-dev gdb
- sudo apt-get install default-libmysqlclient-dev
+ sudo apt-get install default-libmysqlclient-dev libmariadbclient-dev
 ```
-  
+
+
 ## 举例
 ### DEMO
 1. test a,b,c 测试接口a调用b调用c；
 2. qps_rpc,show_rpc 测试同步调用接口和异步调用接口的性能；
 ---
 
-## 运行
+### config json 文件
+- id：0表示系统指定，否则使用自定义id
+- threads：协程线程数，主要是驱动actor
+- loglevel：日志等级trace,debug,info,error
+- actors：[{id：0表示系统指定，make：actor绑定的name， config：actor自定义含义}]
+```json
+{"id":4567,"threads":3,"loglevel":"debug",
+"actors":[
+{"id":0,"make":"tcp","config":"{\"listen\":\"127.0.0.1:4567\",\"threads\":2}"},
+{"id":456700,"make":"testa","config":""},
+{"id":456800,"make":"mysql","config":"{\"db_ip\":\"127.0.0.1\", \"user_name\":\"xx\", \"pwd\":\"xxx\", \"db_name\":\"app\"}]
+}
+```
+
+### 运行
 ```
 ./demo --config=config/demo_main.json
 ```
