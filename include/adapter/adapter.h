@@ -13,7 +13,7 @@ void consoleCbSet(std::string cmd, std::function<void(std::vector<std::string>&)
 db 表创建
 ---------------------------------------------------------------------------------*/
 template <typename t_table>
-void adaper_dbCreate(std::string key_auto = "", std::string key_union = "", std::vector<std::string> key_indexs = {}, std::vector<std::string> key_unique = {}, std::vector<std::string> notnull = {})
+void adaper_dbCreate(std::string key_auto = "", std::vector<std::string> key_unique = {}, std::vector<std::string> key_indexs = {}, std::vector<std::string> notnull = {})
 {
     static_assert(iguana::is_reflection_v<t_table>, "no decl type!");
 
@@ -23,9 +23,7 @@ void adaper_dbCreate(std::string key_auto = "", std::string key_union = "", std:
     req.notnull    = std::move(notnull);
     req.key_auto   = std::move(key_auto);
     req.key_unique = std::move(key_unique);
-    req.key_union  = std::move(key_union);
     req.key_index  = std::move(key_indexs);
-
 
     auto& App = app_t::singletion();
 

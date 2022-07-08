@@ -795,13 +795,14 @@ inline bool from_json0(T &&t, const char *buf, size_t len = -1)
 template <typename T, typename = std::enable_if_t<is_reflection<T>::value>>
 constexpr void do_read0(reader_t &rd, T &&t)
 {
-    using M              = decltype(iguana_reflect_members(std::forward<T>(t)));
-    constexpr auto Count = M::value();
+    using M = decltype(iguana_reflect_members(std::forward<T>(t)));
 
-    auto           tp       = M::apply_impl();
-    constexpr auto Size     = M::value();
-    size_t         loop_idx = 0;
-    size_t         index    = 0;
+    [[maybe_unused]] constexpr auto Count    = M::value();
+    auto                            tp       = M::apply_impl();
+    constexpr auto                  Size     = M::value();
+    size_t                          loop_idx = 0;
+    size_t                          index    = 0;
+
     while (rd.peek().type != token::t_end && index <= Size) {
         if (loop_idx != Size)
             rd.next();

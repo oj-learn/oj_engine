@@ -25,34 +25,27 @@ public:
     friend app_t;
     friend session_t;
     //-----------------------------------------------------------------------------
-    using sptr_t         = std::shared_ptr<actor_t>;
-    using datas_t        = queue_rw_t<channel_t::data_t>;
-    using data_write_t   = channel_t::post_t;
-    using type_sptr_t    = std::unordered_map<std::type_index, sptr_t>;
-    using data_handler_t = std::function<void(channel_t::data_t&)>;
-    using data_bus_t     = std::unordered_map<int, data_handler_t>;
-    using timer_cb_t     = std::function<void()>;
-    using data_rep_t     = channel_t::data_t;
-    using wait_co_t      = std::shared_ptr<void>;
-    using data_chan_t    = std::shared_ptr<void>;
+    using sptr_t       = std::shared_ptr<actor_t>;
+    using datas_t      = queue_rw_t<channel_t::data_t>;
+    using data_write_t = channel_t::post_t;
+    using wait_co_t    = std::shared_ptr<void>;
+    using data_chan_t  = std::shared_ptr<void>;
 
 private:
     //-----------------------------------------------------------------------------
-    long                      m_guid;
-    int                       m_useCount;
-    int                       m_tickValue;
-    std::string               m_name;
-    datas_t                   m_datas;
-    data_chan_t               m_dataChan;
-    data_bus_t                m_dataBus;
-    data_write_t              m_channelWrite;
-    std::atomic<status_t>     m_status;
-    wait_co_t                 m_waitCo;
-    inline static long        s_timeSec;
-    inline static long        s_timeMs;
-    inline static long        s_guidApp;
-    inline static int         s_port;
-    inline static std::string s_ip;
+    long                  m_guid;
+    int                   m_useCount;
+    int                   m_tickValue;
+    std::string           m_name;
+    datas_t               m_datas;
+    data_chan_t           m_dataChan;
+    data_write_t          m_channelWrite;
+    std::atomic<status_t> m_status;
+    wait_co_t             m_waitCo;
+    int                   m_force;
+    inline static long    s_timeSec;
+    inline static long    s_timeMs;
+    inline static long    s_guidApp;
 
 protected:
     //-----------------------------------------------------------------------------
@@ -81,20 +74,17 @@ protected:
 public:
     //-----------------------------------------------------------------------------
     status_t          status() { return m_status; }
-    status_t          closeSet();
+    status_t          closeSet(int force = 0);
     long              guid() { return m_guid; }
     long              guidApp() { return s_guidApp; }
     long              timesecTick() { return s_timeSec; }
     long              timemsTick() { return s_timeMs; }
     void              tickValueSet(int v);
     int               tickValueGet() { return m_tickValue; }
-    int               port() { return s_port; }
-    std::string_view  ip() { return s_ip; }
     std::string_view  nameGet() { return m_name; }
     channel_t::post_t channelGet() { return m_channelWrite; }
     status_t          channel(channel_t::data_t data) { return (*m_channelWrite)(data); }
     oj_rpc::rpc_t&    rpcGet() { return m_rpc; }
-    void              dataHandler(int type, data_handler_t h);
 
 public:
     //-----------------------------------------------------------------------------
@@ -110,6 +100,12 @@ public:
     int call(t_req&& req, Args&&... args)
     {
         return m_rpc.call(std::forward<t_req>(req), std::forward<Args>(args)...);
+    }
+    //-----------------------------------------------------------------------------
+    template <typename t_req>
+    int post(t_req&& req)
+    {
+        return m_rpc.post(std::forward<t_req>(req));
     }
 
 private:

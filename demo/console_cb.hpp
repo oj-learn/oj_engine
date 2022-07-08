@@ -55,16 +55,23 @@ void actor(console_args_t& args)
 ---------------------------------------------------------------------------------*/
 void dbcreate(console_args_t& args)
 {
-    adaper_dbCreate<reflect::account>("", "account_id");
+    adaper_dbCreate<reflect::account>("", {"account_id"});
+
+    reflect::account              record1 = { 1, "account1", 18 };
+    reflect::account              record2 = { 2, "account2", 20 };
+    reflect::account              record3 = { 3, "account3", 24 };
+    std::vector<reflect::account> records{ record1, record2, record3 };
+    adaper_dbUpdate(records);
 }
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/
 void dbquery(console_args_t& args)
 {
+    std::string condition = "where age >= 18 ";
     auto results = adaper_dbQuery<reflect::account>();
-    for (auto& result : results) {
-        logDebug("account_id:{}, account:{}, age:{}", result.account_id, result.account, result.age);
+    for (auto&& row : results) {
+        logDebug("account_id:{}, account:{}, age:{}", row.account_id, row.account, row.age);
     }
 }
 

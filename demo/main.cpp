@@ -38,10 +38,10 @@ void app_bind_register()
 ---------------------------------------------------------------------------------*/
 void app_console_register()
 {
-    consoleCbSet("actor", test::actor);
-    consoleCbSet("close", test::close);
-    consoleCbSet("dbquery", test::dbquery);
-    consoleCbSet("dbcreate", test::dbcreate);
+    consoleCbSet("actor", test::actor, "actor [name] [config]");
+    consoleCbSet("close", test::close, "close 关闭应用 | close name 关闭某个actor");
+    consoleCbSet("dbquery", test::dbquery,"查询表 account");
+    consoleCbSet("dbcreate", test::dbcreate ,"创建表 account,并插入3条数据");
     consoleCbSet("loglevel", test::loglevel, "(appid)[debug|info|error]，appid:0，设置自身，设定log输出等级");
     consoleCbSet("testabc", test::testabc, "测试 a->b->c的同步调用!");
 }

@@ -41,7 +41,7 @@ public:
     //-----------------------------------------------------------------------------
     auto actorGet(long guid) -> actor_sptr_t;
     auto actorGet(const std::string& name) -> actor_sptr_t;
-    auto actorMake(const std::string& name, std::string mark = "", long guid = 0) -> actor_sptr_t;
+    auto actorMake(const std::string& name, std::string config = "", long guid = 0) -> actor_sptr_t;
     void actorFor(std::function<int(actor_sptr_t&)>&& cb);
     void actorFor(const std::string& name, std::function<int(actor_sptr_t&)>&& cb);
     //-----------------------------------------------------------------------------

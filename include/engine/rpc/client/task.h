@@ -26,7 +26,6 @@ public:
     long             m_id;
     bool             m_sync;
     long             m_hash;
-    zip_t            m_reqarg;
     on_rep_t         m_onRepOk;
     on_rep_t         m_onRepError;
     wait_ptr_t       m_wait;
@@ -37,7 +36,6 @@ public:
 public:
     //-----------------------------------------------------------------------------
     task_t(bool sync, long hash);
-    task_t(bool sync, std::string& name, zip_t&& reqarg);
     //-----------------------------------------------------------------------------
     ~task_t();
 
@@ -49,34 +47,29 @@ public:
     int  wait(int ms);
     //-----------------------------------------------------------------------------
     template <typename t_cb>
-    void cbOkSet(t_cb&& cb);
-};
+    void cbOkSet(t_cb&& cb)
+    {
+        this->m_onRepOk = [func = std::forward<t_cb>(cb)](char const* data, int size) {
+            using cb_traits_t = function_traits<std::remove_reference_t<t_cb>>;
 
-/*---------------------------------------------------------------------------------
----------------------------------------------------------------------------------*/
-template <typename t_cb>
-inline void task_t::cbOkSet(t_cb&& cb)
-{
-    this->m_onRepOk = [func = std::forward<t_cb>(cb)](char const* data, int size) {
-        using cb_traits_t = function_traits<std::remove_reference_t<t_cb>>;
+            try {
+                if constexpr (cb_traits_t::arg_size == 1) {
+                    using rep_arg_t = typename cb_traits_t::template args<0>::type;
 
-        try {
-            if constexpr (cb_traits_t::arg_size == 1) {
-                using rep_arg_t = typename cb_traits_t::template args<0>::type;
+                    auto result = codec_.unpack<rep_arg_t>(data, size);
 
-                auto result = codec_.unpack<rep_arg_t>(data, size);
+                    func(result);
 
-                func(result);
+                } else {
+                    func();
+                }
 
-            } else {
-                func();
+            } catch (exception_t& e) {
+                logError("task_t RepOk  exception_t:{}", e.error_message_);
             }
-
-        } catch (exception_t& e) {
-            logError("task_t RepOk  exception_t:{}", e.error_message_);
-        }
-    };
-}
+        };
+    }
+};
 
 /*---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------*/

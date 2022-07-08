@@ -1,7 +1,5 @@
 {"id":4567,"threads":4,"loglevel":"trace",
 "actors":[
 {"id":0,"make":"tcp","config":"{\"listen\":\"127.0.0.1:4567\",\"threads\":3}"},
-{"id":456700,"make":"testa","config":""},
-{"id":456701,"make":"testb","config":""},
-{"id":456702,"make":"testc","config":""}]
+{"id":456700,"make":"testa","config":""}]
 }

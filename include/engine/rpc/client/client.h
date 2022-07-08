@@ -32,25 +32,15 @@ private:
     //-----------------------------------------------------------------------------
     auto taskCancel(task_ptr_t task, head_code_t hc, std::string&& arg) -> int;
     //-----------------------------------------------------------------------------
-    auto taskMake(channel_t::post_t& channel, bool sync, int type, std::string& name, zip_t&& reqarg) -> task_ptr_t;
+    auto taskMake(channel_t::post_t& channel, int sync, int type, std::string& name, zip_t&& reqarg) -> task_ptr_t;
     //-----------------------------------------------------------------------------
     auto taskMake(channel_t::post_t& channel, bool sync, long recvip, long recvport, channel_t::data_t data) -> task_ptr_t;
     //-----------------------------------------------------------------------------
-    auto taskMake(channel_t::post_t& channel, int type, std::string& name, zip_t&& reqarg) -> int;
+    bool post(channel_t::post_t& channel, task_ptr_t task, channel_t::data_t& data);
     //-----------------------------------------------------------------------------
-    bool post(task_ptr_t task, channel_t::post_t& channel, channel_t::data_t& data);
+    int callAsync(channel_t::post_t& channel, bool sync, long recvip, long recvport, channel_t::data_t data, std::function<void(channel_t::data_t)>&& cb);
     //-----------------------------------------------------------------------------
-    template <int type_, typename t_req>
-    int post(channel_t::post_t& channel, t_req&& req)
-    {
-        using req_t            = std::remove_reference_t<t_req>;
-        std::string name       = logFormat("{}({})", type_, meta_hash_t::name_pretty<req_t>());
-        auto        argsBuffer = codec_.packArgs(std::forward<t_req>(req));
-        //-----------------------------------------------------------------------------
-        return this->taskMake(channel, type_, name, std::move(argsBuffer));
-    }
-    //-----------------------------------------------------------------------------
-    template <bool sync, int type_, typename t_cb, typename... Args>
+    template <int sync, int type_, typename t_cb, typename... Args>
     int request(channel_t::post_t& channel, t_cb&& cb, Args&&... args)
     {
         using args_tuple_t = std::tuple<std::remove_reference_t<Args>...>;
@@ -73,13 +63,10 @@ private:
         }
 
         task->cbOkSet(std::move(cb));
-        task->cbErrorSet([](exception_t&& e) {});
+        // task->cbErrorSet([](exception_t&& e) {});
 
         return this->wait(task);
     }
-    //-----------------------------------------------------------------------------
-    int callAsync(bool sync, channel_t::post_t& channel, long recvip, long recvport, channel_t::data_t data, std::function<void(channel_t::data_t)>&& cb);
-    //-----------------------------------------------------------------------------
 };
 
 }  // namespace oj_rpc
